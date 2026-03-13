@@ -280,6 +280,10 @@ pytest
 python -m build
 ```
 
+## Contributors
+
+- **Jaxparow** - Creator and maintainer
+
 ## License
 
 MIT License - see [LICENSE](LICENSE) file for details.

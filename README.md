@@ -2,9 +2,9 @@
 
 Enterprise-ready Python SDK for Beem Africa APIs with focus on SMS and OTP functionality.
 
-[![PyPI version](https://badge.fury.io/py/beem-africa-python-sdk.svg)](https://pypi.org/project/beem-africa-python-sdk/)
+[![PyPI version](https://img.shields.io/pypi/v/beem-africa-python-sdk)](https://pypi.org/project/beem-africa-python-sdk/)
 [![Python Versions](https://img.shields.io/pypi/pyversions/beem-africa-python-sdk)](https://pypi.org/project/beem-africa-python-sdk/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/pypi/l/beem-africa-python-sdk)](https://pypi.org/project/beem-africa-python-sdk/)
 
 ## Features
 

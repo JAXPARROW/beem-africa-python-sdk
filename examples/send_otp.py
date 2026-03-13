@@ -9,8 +9,8 @@ def main():
     client = CompleteBeemClient(
         api_key="your_sms_api_key_here",
         secret_key="your_sms_secret_key_here",
-        otp_api_key="dd3c361149334222",  # Your OTP API key
-        otp_secret_key="NzFlMDc0YzkwNDgwZmY5YzBmZWI2MGQ3Y2YyN2ZkNTk4ZTUwYmRlNmZjZjM4MjAzOWE1MTAyMzViODEyNGE3Mw=="  # Your OTP secret key
+        otp_api_key="your_otp_api_key_here",  # Your OTP API key
+        otp_secret_key="your_otp_secret_key_here"  # Your OTP secret key
     )
 
     try:

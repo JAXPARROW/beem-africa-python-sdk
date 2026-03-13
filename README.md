@@ -34,8 +34,8 @@ from beem_africa_sdk import CompleteBeemClient
 client = CompleteBeemClient(
     api_key="your_sms_api_key",           # SMS API key
     secret_key="your_sms_secret_key",     # SMS secret key
-    otp_api_key="dd3c361149334222",       # OTP API key (separate)
-    otp_secret_key="NzFlMDc0YzkwNDgwZmY5YzBmZWI2MGQ3Y2YyN2ZkNTk4ZTUwYmRlNmZjZjM4MjAzOWE1MTAyMzViODEyNGE3Mw=="  # OTP secret key (separate)
+    otp_api_key="your_otp_api_key",       # OTP API key (separate)
+    otp_secret_key="your_otp_secret_key"  # OTP secret key (separate)
 )
 
 # For same credentials (if your account uses same keys for both)

@@ -1,151 +1,238 @@
-# [python-client](#)
-A Python library to easy the integration with the Beem Africa SMS Gateway 
+# Beem Africa Python SDK
 
-[![Downloads](https://pepy.tech/badge/beem-africa)](https://pepy.tech/project/beem-africa)
-[![Downloads](https://pepy.tech/badge/beem-africa/month)](https://pepy.tech/project/beem-africa)
-[![Downloads](https://pepy.tech/badge/beem-africa/week)](https://pepy.tech/project/beem-africa)
+Enterprise-ready Python SDK for Beem Africa APIs with focus on SMS and OTP functionality.
 
+[![PyPI version](https://badge.fury.io/py/beem-africa-python-sdk.svg)](https://pypi.org/project/beem-africa-python-sdk/)
+[![Python Versions](https://img.shields.io/pypi/pyversions/beem-africa-python-sdk)](https://pypi.org/project/beem-africa-python-sdk/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## Features to be Implemented 
+## Features
 
-- [x] Airtime 
-- [x] OTP
-- [x] SMS 
-- [ ] Two way SMS
-- [ ] USSD
-- [ ] Bpay
+- ✅ **Connection Pooling** - Reuse connections for better performance
+- ✅ **Health Check** - `is_healthy()` method for monitoring
+- ✅ **Exponential Backoff** - Automatic retry with smart backoff
+- ✅ **Comprehensive Error Handling** - Detailed exception hierarchy
+- ✅ **Full Type Hints** - Complete mypy compliance
+- ✅ **Configurable Logging** - Built-in logging support
+- ✅ **Context Manager Support** - Use with `with` statements
+- ✅ **Phone Number Validation** - Automatic Tanzanian number formatting
 
-
-## Getting started
-
-To get started with exploring beem-africa you can either clone the repository or install directly from pip (pre-release is already deployed)
-
-### Installing from pip
+## Installation
 
 ```bash
-pip install beem-africa
+pip install beem-africa-python-sdk
 ```
 
-### Installing directly from github
+## Quick Start
+
+### Initialize Client
+
+```python
+from beem_africa_sdk import CompleteBeemClient
+
+# Initialize with your API credentials
+client = CompleteBeemClient(
+    api_key="your_api_key",
+    secret_key="your_secret_key"
+)
+
+# Check API health
+if client.is_healthy():
+    print("✅ Beem API is accessible")
+else:
+    print("❌ Beem API is unreachable")
+```
+
+### Send SMS
+
+```python
+# Send SMS to single recipient
+response = client.send_sms(
+    source_addr="NANOBILL",
+    message="Your voucher code: ABC123XYZ",
+    recipients="255755660639"
+)
+
+print(f"✅ SMS sent! Request ID: {response['request_id']}")
+
+# Send SMS to multiple recipients
+response = client.send_sms(
+    source_addr="COMPANY",
+    message="Hello valued customers!",
+    recipients=["255755660639", "255712345678", "255798765432"]
+)
+
+print(f"Valid: {response['valid']}, Invalid: {response['invalid']}")
+```
+
+### Send OTP
+
+```python
+# Send OTP
+otp_data = client.send_otp("255755660639")
+pin_id = otp_data['pinId']
+print(f"📱 OTP sent! Pin ID: {pin_id}")
+
+# Later, verify OTP (user enters code)
+user_code = input("Enter OTP code: ")
+is_valid = client.verify_otp(pin_id, user_code)
+
+if is_valid:
+    print("✅ OTP verified successfully!")
+else:
+    print("❌ Invalid OTP code")
+```
+
+### Get Balance & Delivery Reports
+
+```python
+# Check SMS balance
+balance = client.get_balance()
+print(f"Current balance: {balance} SMS credits")
+
+# Get delivery report (call after 5+ minutes)
+reports = client.get_delivery_report(
+    dest_addr="255755660639",
+    request_id="your_request_id"
+)
+
+for report in reports:
+    print(f"Status: {report['status']}, Timestamp: {report['timestamp']}")
+```
+
+### Context Manager Usage
+
+```python
+# Automatic resource cleanup
+with CompleteBeemClient("api_key", "secret_key") as client:
+    client.send_sms("SENDER", "Hello!", ["255755660639"])
+    # Client automatically closed here
+```
+
+## Error Handling
+
+The SDK provides comprehensive error handling with specific exception types:
+
+```python
+from beem_africa_sdk import CompleteBeemClient
+from beem_africa_sdk.exceptions import (
+    BeemAuthenticationError,
+    BeemValidationError,
+    BeemInsufficientBalanceError,
+    BeemConnectionError
+)
+
+client = CompleteBeemClient("api_key", "secret_key")
+
+try:
+    client.send_sms("SENDER", "Hello!", ["invalid_phone"])
+except BeemValidationError as e:
+    print(f"Validation error: {e}")
+except BeemAuthenticationError as e:
+    print(f"Authentication failed: {e}")
+except BeemInsufficientBalanceError as e:
+    print(f"Insufficient balance: {e}")
+except BeemConnectionError as e:
+    print(f"Connection error: {e}")
+```
+
+## API Reference
+
+### CompleteBeemClient
+
+Main client class with all functionality.
+
+#### Constructor
+
+```python
+CompleteBeemClient(
+    api_key: str,
+    secret_key: str,
+    timeout: int = 30,
+    max_retries: int = 3,
+    pool_connections: int = 10,
+    pool_maxsize: int = 100,
+    logger: Optional[logging.Logger] = None
+)
+```
+
+#### Methods
+
+- `is_healthy() -> bool` - Check API accessibility
+- `send_sms(...) -> Dict[str, Any]` - Send SMS messages
+- `get_balance() -> float` - Get SMS credit balance
+- `get_delivery_report(...) -> List[Dict]` - Get delivery status
+- `send_otp(...) -> Dict[str, Any]` - Send OTP
+- `verify_otp(...) -> bool` - Verify OTP code
+- `close()` - Close HTTP connections
+
+## Phone Number Format
+
+The SDK automatically validates and formats Tanzanian phone numbers:
+
+- **Input formats accepted**: `0755660639`, `255755660639`, `+255755660639`
+- **Output format**: `255755660639` (12 digits, no spaces or special chars)
+
+## Configuration
+
+### Environment Variables
+
+Set credentials via environment variables:
 
 ```bash
-git clone https://github.com/beem-africa/python-client
-cd python-client
-python setup.py install
+export BEEM_API_KEY="your_api_key"
+export BEEM_SECRET_KEY="your_secret_key"
 ```
 
-### Authentication
+### Logging
 
-The first thing you need to do before calling module in the beem-africa app is authorize our app with access key and secret key which can be obtained as you signup for beem-official website.
-
-#### Do this to Authenticate !!
-
-```python3
->>> from BeemAfrica import Authorize, AirTime, OTP, SMS
->>> Authorize('access-key', 'secret-key')
-```
-
-### Sending SMS with BeemAfrica
-
-To send SMS with beem africa now made easy, you can use single method to send single and multiple messages at once.
-
-Here how you would send a single SMS with beem-africa, Note that I'm assuming you have already entered the correct access-key and secret-key
+Configure logging for debugging:
 
 ```python
->>> SMS.send_sms('hello pythonista', '255xxxxxxxxxx')
-{'successful': True, 'request_id': 35918915, 'code': 100, 'message': 'Message Submitted Successfully', 'valid': 1, 'invalid': 0, 'duplicates': 0}
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
+client = CompleteBeemClient("api_key", "secret_key")
+# All HTTP requests will be logged
 ```
 
-The above example is that I'm assuming you're using default BeemAfrica sender ID to use yours just do this instead;
+## Development
 
-```python
->>> SMS.send_sms(
-        'You\'re now verified',
-        '255xxxxxxxxx', 
-        sender_id='new-sender-id'
-        )
+### Setup
 
-{'successful': True, 'request_id': 35918915, 'code': 100, 'message': 'Message Submitted Successfully', 'valid': 1, 'invalid': 0, 'duplicates': 0}
+```bash
+git clone https://github.com/JAXPARROW/beem-africa-python-sdk.git
+cd beem-africa-python-sdk
+pip install -e ".[dev]"
 ```
 
-You can also schedule message to be sent after a certain time or at a specific time to do that together with new sender_id, do this instead !!
+### Testing
 
-```python
->>> SMS.send_sms(
-        'You have won a 10 Million', 
-        '2557xxxxxxxxx', 
-        sender_id='new-sender-d', 
-        schedule_time='scheduled time'
-    )
-{'successful': True, 'request_id': 35918915, 'code': 100, 'message': 'Message Submitted Successfully', 'valid': 1, 'invalid': 0, 'duplicates': 0}
+```bash
+pytest
 ```
 
-Also instead of sending to one recipient per time you can send an SMS to Multiple clients at Once you just have to twist the send_sms() to look like this;
+### Building
 
-```python
->>> SMS.send_sms('my-message', ['2557xxxxxx', '2557xxxxxx'])
+```bash
+python -m build
 ```
 
-## Verifying One Time password with BeemAfrica
+## License
 
-Apart from just sending SMS, Beem also provides OTP Services for One Time password verification system that is expected to be expired after a certain time that has been specified.
+MIT License - see [LICENSE](LICENSE) file for details.
 
-You can also use OTP to do 2-factor-authentication system to your app/website, Beem will generate a random OTP for you and provide you an endpoint to verify it.
+## Contributing
 
-Here how to send OTP with Beem !!
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests
+5. Submit a pull request
 
-```python
->>> OTP.send_otp('2557xxxxxx')
-{'data': {'pinId': '4a5c2141-c965-4a9d-aca4-54f58063e831', 'message': {'code': 100, 'message': 'SMS sent successfully'}}}
-```
+## Support
 
-To verify the OTP send to user do this !!
- 
-Note:  Use pin_id from response you just recieve while sending an OTP and the PIN sent to user phone to verify the OTP, its going to look like this !!
-
-
-```python
->>> OTP.verify(pin_id='4a5c2141-c965-4a9d-aca4-54f58063e831', pin='122496')
-{'data': {'message': {'code': 117, 'message': 'Valid Pin'}}}
-```
-
-
-## AirTime
-
-BeemAfrica also provide interface to interact with AirTime allowing you to easily transfer AirTime from BeemAfrica Credit to customer mobile !!
-
-Here how to Transfer AirTime to customer mobile with Beem Africa !!
-
-```python
->>> AirTime.transfer_airtime('255757294146', 100)
-{'code': 200, 'transaction_id': 1619484193194, 'message': 'Disbursement is in progress'}
-```
-
-By doing that now after few seconds check AirTime balance on mobile and it going to increase by +100 .
-
-You can also check balance of remaining credit balance by doing this
-
-```python
->>> AirTime.get_credit_balance()
-{'data': {'credit_bal': '708.0357'}}
-```
-
-Well these are the only implemented features by now !
-
-
-## Issues
-
-Are you facing any issue with the integration of beem-africa libray, please raise an Issue so as we can fix as soon as we can !!
-
-## Contribution ?
-
-Would you like to contribute to beem-africa python-client, Contributions of any kind is really welcomed, just fork it .. you can also reach me direct if you face any issue with contributing at isaaackeinstein(at)gmail(dot)com.
-
-## Give it star ?
-
-Was this repository useful to you in any means, well then give it a star so as more people can get to know it.
-
-
-## Credits
-
-All the credits to [kalebu](https://github.com/kalebu) and all the future contributors
+- 📖 [Documentation](https://github.com/JAXPARROW/beem-africa-python-sdk)
+- 🐛 [Issues](https://github.com/JAXPARROW/beem-africa-python-sdk/issues)
+- 💬 [Discussions](https://github.com/JAXPARROW/beem-africa-python-sdk/discussions)

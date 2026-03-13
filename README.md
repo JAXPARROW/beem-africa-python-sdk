@@ -30,10 +30,19 @@ pip install beem-africa-python-sdk
 ```python
 from beem_africa_sdk import CompleteBeemClient
 
-# Initialize with your API credentials
+# For separate SMS and OTP credentials (recommended)
+client = CompleteBeemClient(
+    api_key="your_sms_api_key",           # SMS API key
+    secret_key="your_sms_secret_key",     # SMS secret key
+    otp_api_key="dd3c361149334222",       # OTP API key (separate)
+    otp_secret_key="NzFlMDc0YzkwNDgwZmY5YzBmZWI2MGQ3Y2YyN2ZkNTk4ZTUwYmRlNmZjZjM4MjAzOWE1MTAyMzViODEyNGE3Mw=="  # OTP secret key (separate)
+)
+
+# For same credentials (if your account uses same keys for both)
 client = CompleteBeemClient(
     api_key="your_api_key",
     secret_key="your_secret_key"
+    # otp_api_key and otp_secret_key will default to api_key/secret_key
 )
 
 # Check API health
@@ -43,23 +52,41 @@ else:
     print("❌ Beem API is unreachable")
 ```
 
+### Manage Sender IDs
+
+```python
+# Set approved sender IDs for your account
+client.set_approved_senders(["NANOBILL", "COMPANY", "ALERTS"])
+
+# Add individual sender IDs
+client.add_approved_sender("PROMO")
+
+# Get list of approved senders
+approved = client.get_approved_senders()
+print(f"Approved senders: {approved}")
+
+# Validate if a sender ID is approved (sends test SMS)
+is_valid = client.validate_sender_id("NANOBILL")
+print(f"NANOBILL is approved: {is_valid}")
+```
+
 ### Send SMS
 
 ```python
-# Send SMS to single recipient
+# Configure approved sender IDs
+client.set_approved_senders(["NANOBILL", "COMPANY"])
+
+# Send SMS using default approved sender (NANOBILL)
 response = client.send_sms(
-    source_addr="NANOBILL",
     message="Your voucher code: ABC123XYZ",
     recipients="255755660639"
 )
 
-print(f"✅ SMS sent! Request ID: {response['request_id']}")
-
-# Send SMS to multiple recipients
+# Send SMS with specific sender
 response = client.send_sms(
-    source_addr="COMPANY",
     message="Hello valued customers!",
-    recipients=["255755660639", "255712345678", "255798765432"]
+    recipients=["255755660639", "255712345678", "255798765432"],
+    source_addr="COMPANY"
 )
 
 print(f"Valid: {response['valid']}, Invalid: {response['invalid']}")
@@ -67,11 +94,22 @@ print(f"Valid: {response['valid']}, Invalid: {response['invalid']}")
 
 ### Send OTP
 
+**Note:** OTP functionality uses separate API credentials from SMS. Beem provides different API keys for SMS and OTP services. Use your OTP-specific credentials:
+
 ```python
-# Send OTP
-otp_data = client.send_otp("255755660639")
-pin_id = otp_data['pinId']
+# Send OTP with NanoBill app (using separate OTP credentials)
+otp_data = client.send_otp("255755660639", app_id="4147")
+pin_id = otp_data['data']['pinId']
 print(f"📱 OTP sent! Pin ID: {pin_id}")
+
+# Send OTP with custom sender ID
+otp_data = client.send_otp(
+    phone="255755660639",
+    app_id="4147",  # Your NanoBill app ID
+    sender_id="NanoBill"  # Your sender ID
+)
+pin_id = otp_data['data']['pinId']
+print(f"📱 OTP sent from NanoBill! Pin ID: {pin_id}")
 
 # Later, verify OTP (user enters code)
 user_code = input("Enter OTP code: ")
@@ -196,6 +234,29 @@ logging.basicConfig(level=logging.DEBUG)
 client = CompleteBeemClient("api_key", "secret_key")
 # All HTTP requests will be logged
 ```
+
+## API Limitations
+
+### SMS Restrictions
+- **Unicode Characters**: Beem API does not support Unicode characters, emojis, or special symbols in SMS messages. Messages containing these will be rejected with an error.
+- **Plain Text Only**: Use ASCII characters only for reliable delivery.
+- **Sender ID**: Maximum 11 characters, alphanumeric only. Must be pre-approved by Beem.
+
+### OTP Service
+- **Account Dependent**: OTP functionality requires separate activation in your Beem account.
+- **Setup Required**: Visit Beem dashboard → OTP menu → API Setup to generate API keys and configure applications.
+- **Application ID**: Each OTP request requires an `app_id` that corresponds to your Beem application.
+- **Error Codes**: 
+  - `100`: SMS sent successfully
+  - `101`: Failed to send SMS
+  - `117`: Valid PIN (verification successful)
+  - `114`: Incorrect PIN
+  - `115`: PIN timeout
+  - `116`: Attempts exceeded
+
+### Delivery Reports
+- **Timing**: Delivery reports should be requested at least 5 minutes after sending SMS.
+- **Separate Endpoint**: Uses different API endpoint (`dlrapi.beem.africa`) than main SMS API.
 
 ## Development
 

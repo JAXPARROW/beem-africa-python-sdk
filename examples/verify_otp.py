@@ -7,8 +7,10 @@ from beem_africa_sdk import CompleteBeemClient
 
 def main():
     client = CompleteBeemClient(
-        api_key="your_api_key_here",
-        secret_key="your_secret_key_here"
+        api_key="your_sms_api_key_here",  # SMS API key
+        secret_key="your_sms_secret_key_here",  # SMS secret key
+        otp_api_key="dd3c361149334222",  # OTP API key
+        otp_secret_key="NzFlMDc0YzkwNDgwZmY5YzBmZWI2MGQ3Y2YyN2ZkNTk4ZTUwYmRlNmZjZjM4MjAzOWE1MTAyMzViODEyNGE3Mw=="  # OTP secret key
     )
 
     # In a real scenario, pin_id would come from send_otp response

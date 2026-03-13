@@ -13,19 +13,23 @@ class SMSMixin:
     
     def send_sms(
         self: BeemClient,
-        source_addr: str,
         message: str,
         recipients: Union[str, List[str]],
+        source_addr: Optional[str] = None,
         schedule_time: str = "",
         encoding: str = "0"
     ) -> Dict[str, Any]:
         """
         Send SMS to one or multiple recipients.
         
+        Note: Beem API does not support Unicode characters (emojis, special symbols).
+        Messages containing Unicode will be rejected. Use plain ASCII text only.
+        
         Args:
-            source_addr: Sender ID (max 11 characters, alphanumeric)
-            message: SMS content
+            message: SMS content (plain ASCII text only, no Unicode/emojis)
             recipients: Single phone number or list of phone numbers
+            source_addr: Sender ID (max 11 characters, alphanumeric). 
+                        If not provided, uses first approved sender ID.
             schedule_time: Optional schedule time (format: "yyyy-mm-dd hh:mm", UTC)
             encoding: Message encoding (default: "0" for plain text)
             
@@ -38,6 +42,16 @@ class SMSMixin:
             BeemInsufficientBalanceError: Not enough credit
             BeemAuthenticationError: Invalid credentials
         """
+        # Use approved sender if none provided
+        if source_addr is None:
+            if self._approved_senders:
+                source_addr = self._approved_senders[0]
+            else:
+                raise BeemValidationError(
+                    "No sender ID provided and no approved senders configured. "
+                    "Use set_approved_senders() to configure sender IDs or provide source_addr explicitly."
+                )
+        
         # Validate sender ID
         if not source_addr or len(source_addr) > 11:
             raise BeemValidationError(

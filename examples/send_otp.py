@@ -7,15 +7,32 @@ from beem_africa_sdk import CompleteBeemClient
 
 def main():
     client = CompleteBeemClient(
-        api_key="your_api_key_here",
-        secret_key="your_secret_key_here"
+        api_key="your_sms_api_key_here",
+        secret_key="your_sms_secret_key_here",
+        otp_api_key="your_otp_api_key_here",  # Your OTP API key
+        otp_secret_key="your_otp_secret_key_here"  # Your OTP secret key
     )
 
     try:
-        # Send OTP
+        # Configure approved sender IDs (used by default for OTP)
+        client.set_approved_senders(["NanoBill"])
+        print("✅ Configured approved sender IDs: NanoBill")
+
+        # Send OTP with default settings (uses approved sender)
+        print("📱 Sending OTP with default settings...")
         otp_data = client.send_otp("255755660639")
         pin_id = otp_data['pinId']
-        print(f"📱 OTP sent! Pin ID: {pin_id}")
+        print(f"✅ OTP sent! Pin ID: {pin_id}")
+
+        # Send OTP with custom app ID and sender ID (NanoBill example)
+        print("\n📱 Sending OTP with NanoBill branding...")
+        otp_data = client.send_otp(
+            phone="255755660639",
+            app_id="4147",  # NanoBill app ID
+            sender_id="NanoBill"  # Sender ID
+        )
+        pin_id = otp_data['pinId']
+        print(f"✅ OTP sent from NanoBill! Pin ID: {pin_id}")
 
         # In a real application, you would get the code from user input
         # For demo purposes, we'll simulate user input

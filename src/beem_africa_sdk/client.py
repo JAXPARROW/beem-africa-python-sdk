@@ -21,7 +21,12 @@ class BeemClient:
     comprehensive error handling for production use.
     
     Example:
-        client = BeemClient(api_key="your_key", secret_key="your_secret")
+        client = BeemClient(
+            api_key="your_sms_key", 
+            secret_key="your_sms_secret",
+            otp_api_key="your_otp_key",  # Optional: separate OTP credentials
+            otp_secret_key="your_otp_secret"
+        )
         
         # Check if API is healthy
         if client.is_healthy():
@@ -34,6 +39,9 @@ class BeemClient:
             recipients=["255755660639"]
         )
         
+        # Send OTP (uses OTP credentials if provided)
+        otp_data = client.send_otp("255755660639", app_id="4147")
+        
         # Close client when done
         client.close()
     """
@@ -42,6 +50,8 @@ class BeemClient:
         self,
         api_key: str,
         secret_key: str,
+        otp_api_key: Optional[str] = None,
+        otp_secret_key: Optional[str] = None,
         timeout: int = 30,
         max_retries: int = 3,
         pool_connections: int = 10,
@@ -52,8 +62,10 @@ class BeemClient:
         Initialize Beem client with connection pooling.
         
         Args:
-            api_key: Beem API key
-            secret_key: Beem secret key
+            api_key: Beem SMS API key
+            secret_key: Beem SMS secret key
+            otp_api_key: Beem OTP API key (if different from SMS)
+            otp_secret_key: Beem OTP secret key (if different from SMS)
             timeout: Request timeout in seconds
             max_retries: Maximum number of retry attempts
             pool_connections: Number of connection pools to cache
@@ -62,6 +74,8 @@ class BeemClient:
         """
         self.api_key = api_key
         self.secret_key = secret_key
+        self.otp_api_key = otp_api_key or api_key
+        self.otp_secret_key = otp_secret_key or secret_key
         
         # Initialize HTTP client with connection pooling
         self.http = PooledHTTPClient(
@@ -77,6 +91,9 @@ class BeemClient:
         
         # Separate base URL for delivery reports
         self.dlr_base_url = "https://dlrapi.beem.africa"
+        
+        # Approved sender IDs (can be set by user or retrieved from API)
+        self._approved_senders: List[str] = []
         
         self.logger = logger or logging.getLogger(__name__)
     
@@ -141,6 +158,81 @@ class BeemClient:
             except ValueError:
                 # Not JSON
                 raise BeemAPIError(f"HTTP {response.status_code}: {response.text}")
+    
+    def set_approved_senders(self, senders: List[str]) -> None:
+        """
+        Set the list of approved sender IDs for this account.
+        
+        Args:
+            senders: List of approved sender ID strings (max 11 chars each)
+            
+        Raises:
+            BeemValidationError: If any sender ID is invalid
+        """
+        for sender in senders:
+            if not sender or len(sender) > 11:
+                raise BeemValidationError(
+                    f"Sender ID must be 1-11 characters, got '{sender}' ({len(sender)} chars)"
+                )
+        self._approved_senders = senders.copy()
+    
+    def get_approved_senders(self) -> List[str]:
+        """
+        Get the list of approved sender IDs for this account.
+        
+        Returns:
+            List of approved sender ID strings
+        """
+        return self._approved_senders.copy()
+    
+    def add_approved_sender(self, sender: str) -> None:
+        """
+        Add a single approved sender ID.
+        
+        Args:
+            sender: Sender ID to add (max 11 characters)
+            
+        Raises:
+            BeemValidationError: If sender ID is invalid
+        """
+        if not sender or len(sender) > 11:
+            raise BeemValidationError(
+                f"Sender ID must be 1-11 characters, got '{sender}' ({len(sender)} chars)"
+            )
+        if sender not in self._approved_senders:
+            self._approved_senders.append(sender)
+    
+    def validate_sender_id(self, sender_id: str) -> bool:
+        """
+        Validate if a sender ID is approved by attempting a test SMS.
+        
+        This method sends a test SMS with minimal content to check if the
+        sender ID is approved. Note: This will consume SMS credits.
+        
+        Args:
+            sender_id: Sender ID to validate
+            
+        Returns:
+            True if sender ID is approved, False otherwise
+            
+        Raises:
+            BeemValidationError: Invalid sender ID format
+        """
+        if not sender_id or len(sender_id) > 11:
+            raise BeemValidationError(
+                f"Sender ID must be 1-11 characters, got '{sender_id}' ({len(sender_id)} chars)"
+            )
+        
+        try:
+            # Send a test SMS with minimal content
+            response = self.http.request('POST', 'public/v1/send', json={
+                'source_addr': sender_id,
+                'message': 'Test',
+                'recipients': ['255755660639']  # Use a test number
+            })
+            return response.status_code == 200
+        except Exception:
+            return False
     
     def close(self):
         """Close the HTTP client and free resources."""

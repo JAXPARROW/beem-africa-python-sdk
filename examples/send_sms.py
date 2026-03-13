@@ -20,13 +20,24 @@ def main():
         return
 
     try:
-        # Send SMS to single recipient
+        # Configure approved sender IDs
+        client.set_approved_senders(["NANOBILL", "COMPANY"])
+        print("✅ Configured approved sender IDs: NANOBILL, COMPANY")
+
+        # Send SMS using default approved sender (NANOBILL)
         response = client.send_sms(
-            source_addr="NANOBILL",
             message="Your voucher code: ABC123XYZ",
             recipients="255755660639"
         )
-        print(f"✅ SMS sent! Request ID: {response['request_id']}")
+        print(f"✅ SMS sent with default sender! Request ID: {response['request_id']}")
+
+        # Send SMS with specific sender
+        response = client.send_sms(
+            message="Hello from COMPANY!",
+            recipients="255755660639",
+            source_addr="COMPANY"
+        )
+        print(f"✅ SMS sent with COMPANY sender! Request ID: {response['request_id']}")
         print(f"Valid: {response['valid']}, Invalid: {response['invalid']}")
 
     except Exception as e:

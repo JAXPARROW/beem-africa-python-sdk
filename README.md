@@ -92,6 +92,36 @@ response = client.send_sms(
 print(f"Valid: {response['valid']}, Invalid: {response['invalid']}")
 ```
 
+### Schedule SMS
+
+Use the `schedule_time` parameter (UTC, format `"yyyy-mm-dd hh:mm"`) to deliver a message at a future time.
+
+```python
+from datetime import datetime, timezone, timedelta
+
+# Schedule 2 hours from now
+send_at = datetime.now(timezone.utc) + timedelta(hours=2)
+schedule_time = send_at.strftime("%Y-%m-%d %H:%M")
+
+# Single recipient
+response = client.send_sms(
+    message="Your appointment reminder.",
+    recipients="255712345678",
+    source_addr="INFO",
+    schedule_time=schedule_time
+)
+print(f"Scheduled: {response['request_id']}")
+
+# Multiple recipients
+response = client.send_sms(
+    message="Team broadcast scheduled.",
+    recipients=["255712345678", "255798765432", "255754321098"],
+    source_addr="INFO",
+    schedule_time=schedule_time
+)
+print(f"Bulk scheduled: {response['request_id']}, Valid: {response['valid']}")
+```
+
 ### Send OTP
 
 **Note:** OTP functionality uses separate API credentials from SMS. Beem provides different API keys for SMS and OTP services. Use your OTP-specific credentials:

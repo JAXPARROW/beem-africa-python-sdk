@@ -34,13 +34,13 @@ class BeemClient:
         
         # Send SMS
         response = client.send_sms(
-            source_addr="NANOBILL",
+            source_addr="INFO",
             message="Hello world",
-            recipients=["255755660639"]
+            recipients=["255712345678"]
         )
-        
+
         # Send OTP (uses OTP credentials if provided)
-        otp_data = client.send_otp("255755660639", app_id="4147")
+        otp_data = client.send_otp("255712345678", app_id="your_app_id")
         
         # Close client when done
         client.close()
@@ -94,7 +94,13 @@ class BeemClient:
         
         # Approved sender IDs (can be set by user or retrieved from API)
         self._approved_senders: List[str] = []
-        
+
+        # Cached OTP HTTP client (lazily initialised)
+        self._otp_http: Optional[PooledHTTPClient] = None
+        self._max_retries = max_retries
+        self._pool_connections = pool_connections
+        self._pool_maxsize = pool_maxsize
+
         self.logger = logger or logging.getLogger(__name__)
     
     def is_healthy(self) -> bool:
@@ -228,15 +234,33 @@ class BeemClient:
             response = self.http.request('POST', 'public/v1/send', json={
                 'source_addr': sender_id,
                 'message': 'Test',
-                'recipients': ['255755660639']  # Use a test number
+                'recipients': ['255712345678']  # Use a test number
             })
             return response.status_code == 200
         except Exception:
             return False
     
+    def _get_otp_http(self) -> "PooledHTTPClient":
+        """Return (and lazily create) the cached OTP HTTP client."""
+        if self._otp_http is None:
+            self._otp_http = PooledHTTPClient(
+                api_key=self.otp_api_key,
+                secret_key=self.otp_secret_key,
+                base_url="https://apiotp.beem.africa/v1",
+                timeout=self.http.timeout,
+                max_retries=self._max_retries,
+                pool_connections=self._pool_connections,
+                pool_maxsize=self._pool_maxsize,
+                logger=self.logger,
+            )
+        return self._otp_http
+
     def close(self):
         """Close the HTTP client and free resources."""
         self.http.close()
+        if self._otp_http is not None:
+            self._otp_http.close()
+            self._otp_http = None
     
     def __enter__(self):
         return self

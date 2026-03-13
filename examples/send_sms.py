@@ -21,20 +21,20 @@ def main():
 
     try:
         # Configure approved sender IDs
-        client.set_approved_senders(["NANOBILL", "COMPANY"])
-        print("✅ Configured approved sender IDs: NANOBILL, COMPANY")
+        client.set_approved_senders(["INFO", "COMPANY"])
+        print("✅ Configured approved sender IDs: INFO, COMPANY")
 
-        # Send SMS using default approved sender (NANOBILL)
+        # Send SMS using default approved sender (INFO)
         response = client.send_sms(
             message="Your voucher code: ABC123XYZ",
-            recipients="255755660639"
+            recipients="255712345678"
         )
         print(f"✅ SMS sent with default sender! Request ID: {response['request_id']}")
 
         # Send SMS with specific sender
         response = client.send_sms(
             message="Hello from COMPANY!",
-            recipients="255755660639",
+            recipients="255712345678",
             source_addr="COMPANY"
         )
         print(f"✅ SMS sent with COMPANY sender! Request ID: {response['request_id']}")

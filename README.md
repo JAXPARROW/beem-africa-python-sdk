@@ -56,7 +56,7 @@ else:
 
 ```python
 # Set approved sender IDs for your account
-client.set_approved_senders(["NANOBILL", "COMPANY", "ALERTS"])
+client.set_approved_senders(["INFO", "COMPANY", "ALERTS"])
 
 # Add individual sender IDs
 client.add_approved_sender("PROMO")
@@ -66,26 +66,26 @@ approved = client.get_approved_senders()
 print(f"Approved senders: {approved}")
 
 # Validate if a sender ID is approved (sends test SMS)
-is_valid = client.validate_sender_id("NANOBILL")
-print(f"NANOBILL is approved: {is_valid}")
+is_valid = client.validate_sender_id("INFO")
+print(f"INFO is approved: {is_valid}")
 ```
 
 ### Send SMS
 
 ```python
 # Configure approved sender IDs
-client.set_approved_senders(["NANOBILL", "COMPANY"])
+client.set_approved_senders(["INFO", "COMPANY"])
 
-# Send SMS using default approved sender (NANOBILL)
+# Send SMS using default approved sender (INFO)
 response = client.send_sms(
     message="Your voucher code: ABC123XYZ",
-    recipients="255755660639"
+    recipients="255712345678"
 )
 
 # Send SMS with specific sender
 response = client.send_sms(
     message="Hello valued customers!",
-    recipients=["255755660639", "255712345678", "255798765432"],
+    recipients=["255712345678", "255798765432"],
     source_addr="COMPANY"
 )
 
@@ -97,19 +97,19 @@ print(f"Valid: {response['valid']}, Invalid: {response['invalid']}")
 **Note:** OTP functionality uses separate API credentials from SMS. Beem provides different API keys for SMS and OTP services. Use your OTP-specific credentials:
 
 ```python
-# Send OTP with NanoBill app (using separate OTP credentials)
-otp_data = client.send_otp("255755660639", app_id="4147")
+# Send OTP (using separate OTP credentials)
+otp_data = client.send_otp("255712345678", app_id="your_app_id")
 pin_id = otp_data['data']['pinId']
 print(f"📱 OTP sent! Pin ID: {pin_id}")
 
 # Send OTP with custom sender ID
 otp_data = client.send_otp(
-    phone="255755660639",
-    app_id="4147",  # Your NanoBill app ID
-    sender_id="NanoBill"  # Your sender ID
+    phone="255712345678",
+    app_id="your_app_id",
+    sender_id="INFO"
 )
 pin_id = otp_data['data']['pinId']
-print(f"📱 OTP sent from NanoBill! Pin ID: {pin_id}")
+print(f"📱 OTP sent! Pin ID: {pin_id}")
 
 # Later, verify OTP (user enters code)
 user_code = input("Enter OTP code: ")
@@ -130,7 +130,7 @@ print(f"Current balance: {balance} SMS credits")
 
 # Get delivery report (call after 5+ minutes)
 reports = client.get_delivery_report(
-    dest_addr="255755660639",
+    dest_addr="255712345678",
     request_id="your_request_id"
 )
 
@@ -143,7 +143,7 @@ for report in reports:
 ```python
 # Automatic resource cleanup
 with CompleteBeemClient("api_key", "secret_key") as client:
-    client.send_sms("SENDER", "Hello!", ["255755660639"])
+    client.send_sms("SENDER", "Hello!", ["255712345678"])
     # Client automatically closed here
 ```
 
@@ -208,8 +208,8 @@ CompleteBeemClient(
 
 The SDK automatically validates and formats Tanzanian phone numbers:
 
-- **Input formats accepted**: `0755660639`, `255755660639`, `+255755660639`
-- **Output format**: `255755660639` (12 digits, no spaces or special chars)
+- **Input formats accepted**: `0712345678`, `255712345678`, `+255712345678`
+- **Output format**: `255712345678` (12 digits, no spaces or special chars)
 
 ## Configuration
 

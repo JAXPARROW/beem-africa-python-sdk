@@ -38,9 +38,8 @@ def main():
     print("\n1. Sending OTP...")
     try:
         # Replace with actual phone number for real testing
-        # phone_number = "255755660639"  # Valid Tanzanian number format
         phone_number = "255712345678"  # Example valid number (for demo)
-        app_id = "4147"  # NanoBill app ID
+        app_id = "your_app_id"
 
         print(f"Sending OTP to: {phone_number}")
         print("(Note: Replace with real phone number for actual testing)")

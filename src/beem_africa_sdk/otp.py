@@ -60,29 +60,11 @@ class OTPMixin:
         # It's handled at the application level in Beem
         
         try:
-            # Create OTP-specific HTTP client with OTP credentials
-            from .utils.http_client import PooledHTTPClient
-            
-            otp_http = PooledHTTPClient(
-                api_key=self.otp_api_key,
-                secret_key=self.otp_secret_key,
-                base_url="https://apiotp.beem.africa/v1",
-                timeout=self.http.timeout,
-                max_retries=3,  # Default value since not stored
-                pool_connections=10,  # Default values
-                pool_maxsize=100,
-                logger=self.http.logger
-            )
-            
-            try:
-                # Make request to /request endpoint
-                response = otp_http.request('POST', 'request', json=payload)
-                result = self._handle_response(response)
-                
-                return result['data']
-            finally:
-                otp_http.close()
-                
+            otp_http = self._get_otp_http()
+            # Make request to /request endpoint
+            response = otp_http.request('POST', 'request', json=payload)
+            result = self._handle_response(response)
+            return result['data']
         except BeemAPIError as e:
             if "404" in str(e) or "not found" in str(e).lower():
                 raise BeemAPIError(
@@ -113,31 +95,14 @@ class OTPMixin:
         }
         
         try:
-            # Create OTP-specific HTTP client with OTP credentials
-            from .utils.http_client import PooledHTTPClient
-            
-            otp_http = PooledHTTPClient(
-                api_key=self.otp_api_key,
-                secret_key=self.otp_secret_key,
-                base_url="https://apiotp.beem.africa/v1",
-                timeout=self.http.timeout,
-                max_retries=3,  # Default value since not stored
-                pool_connections=10,  # Default values
-                pool_maxsize=100,
-                logger=self.http.logger
-            )
-            
-            try:
-                response = otp_http.request('POST', 'verify', json=payload)
-                result = self._handle_response(response)
-                
-                # Check if valid (code 117 means valid)
-                data = result.get('data', {})
-                message = data.get('message', {})
-                return message.get('code') == 117
-            finally:
-                otp_http.close()
-                
+            otp_http = self._get_otp_http()
+            response = otp_http.request('POST', 'verify', json=payload)
+            result = self._handle_response(response)
+
+            # Check if valid (code 117 means valid)
+            data = result.get('data', {})
+            message = data.get('message', {})
+            return message.get('code') == 117
         except BeemAPIError as e:
             # For verification errors, check the response if available
             # Code 114 = Incorrect Pin, 115 = Pin Timeout, 116 = Attempts Exceeded

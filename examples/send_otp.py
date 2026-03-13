@@ -15,24 +15,24 @@ def main():
 
     try:
         # Configure approved sender IDs (used by default for OTP)
-        client.set_approved_senders(["NanoBill"])
-        print("✅ Configured approved sender IDs: NanoBill")
+        client.set_approved_senders(["INFO"])
+        print("✅ Configured approved sender IDs: INFO")
 
         # Send OTP with default settings (uses approved sender)
         print("📱 Sending OTP with default settings...")
-        otp_data = client.send_otp("255755660639")
+        otp_data = client.send_otp("255712345678")
         pin_id = otp_data['pinId']
         print(f"✅ OTP sent! Pin ID: {pin_id}")
 
-        # Send OTP with custom app ID and sender ID (NanoBill example)
-        print("\n📱 Sending OTP with NanoBill branding...")
+        # Send OTP with custom app ID and sender ID
+        print("\n📱 Sending OTP with custom app ID...")
         otp_data = client.send_otp(
-            phone="255755660639",
-            app_id="4147",  # NanoBill app ID
-            sender_id="NanoBill"  # Sender ID
+            phone="255712345678",
+            app_id="your_app_id",
+            sender_id="INFO"
         )
         pin_id = otp_data['pinId']
-        print(f"✅ OTP sent from NanoBill! Pin ID: {pin_id}")
+        print(f"✅ OTP sent! Pin ID: {pin_id}")
 
         # In a real application, you would get the code from user input
         # For demo purposes, we'll simulate user input

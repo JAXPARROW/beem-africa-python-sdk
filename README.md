@@ -282,7 +282,7 @@ python -m build
 
 ## Contributors
 
-- **Jaxparow** - Creator and maintainer
+- **Jackson Linus** - Creator and maintainer
 
 ## License
 

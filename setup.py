@@ -6,8 +6,8 @@ setup(
     description="A Python library to easy the integration with the Beem Africa SMS Gateway",
     url="https://github.com/beem-africa/python-client",
     download_url="https://github.com/beem-africa/python-client/releases/tag/0.1",
-    author="Jordan Kalebu",
-    author_email="isaackeinstein@gmail.com",
+    author="Jackson Linus",
+    author_email="jacksonlinus95@gmail.com",
     license="MIT",
     packages=["BeemAfrica"],
     keywords=[

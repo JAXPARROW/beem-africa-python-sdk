@@ -4,10 +4,13 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "beem-africa-python-sdk"
-version = "0.2.1"
+version = "0.2.2"
 description = "Enterprise-ready Python SDK for Beem Africa (SMS + OTP)"
 readme = "README.md"
 license = {text = "MIT"}
+authors = [
+    {name = "Jackson Linus", email = "jacksonlinus95@gmail.com"}
+]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",

@@ -7,9 +7,6 @@ name = "beem-africa-python-sdk"
 version = "0.2.0"
 description = "Enterprise-ready Python SDK for Beem Africa (SMS + OTP)"
 readme = "README.md"
-authors = [
-    {name = "Jaxparow", email = "jaxparow@example.com"},
-]
 license = {text = "MIT"}
 classifiers = [
     "Development Status :: 4 - Beta",

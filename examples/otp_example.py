@@ -25,10 +25,10 @@ def main():
     # Initialize OTP client with your credentials
     # Note: Using separate OTP credentials as provided
     otp_client = OTP(
-        api_key="your_otp_api_key_here",  # SMS API key (can be same or different)
-        secret_key="your_otp_secret_key_here",  # SMS secret
-        otp_api_key="your_otp_api_key_here",  # OTP API key
-        otp_secret_key="your_otp_secret_key_here"  # OTP secret
+        api_key="your_sms_api_key",  # SMS API key (can be same or different)
+        secret_key="your_sms_secret_key",  # SMS secret
+        otp_api_key="your_otp_api_key",  # OTP API key
+        otp_secret_key="your_otp_secret_key"  # OTP secret
     )
 
     print("Beem Africa OTP Example")
